@@ -1,0 +1,7 @@
+services:
+  reels-finder:
+    build: .
+    container_name: reels-finder
+    restart: unless-stopped
+    ports:
+      - "8080:80"
