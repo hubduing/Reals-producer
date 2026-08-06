@@ -1,7 +1,7 @@
 # Server-side deploy script for reels-finder
 # Runs on the "server" (local machine): pulls latest code from GitHub and rebuilds the container.
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 
 $serverDir = "D:\reels-server\app"
 $repoUrl = "https://github.com/hubduing/Reals-producer.git"
@@ -33,13 +33,18 @@ try {
     if ($localRev -ne $remoteRev) {
         Write-Log "New commits found: $localRev -> $remoteRev. Deploying..."
         git pull --rebase origin main 2>&1 | ForEach-Object { Write-Log $_ }
-        if ($LASTEXITCODE -ne 0) { throw "git pull failed" }
-        docker compose up -d --build 2>&1 | ForEach-Object { Write-Log $_ }
-        if ($LASTEXITCODE -ne 0) { throw "docker compose failed" }
+        if ($LASTEXITCODE -ne 0) { throw "git pull failed (exit $LASTEXITCODE)" }
+        $buildOut = docker compose up -d --build 2>&1
+        $buildOut | ForEach-Object { Write-Log $_ }
+        if ($LASTEXITCODE -ne 0) { throw "docker compose failed (exit $LASTEXITCODE)" }
         Write-Log "Deploy finished. Container is running."
     } else {
         Write-Log "No changes (HEAD is $localRev)."
     }
+}
+catch {
+    Write-Log "DEPLOY ERROR: $($_.Exception.Message)"
+    exit 1
 }
 finally {
     Pop-Location
