@@ -3,10 +3,647 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reels Finder</title>
+  <title>Reels Finder — Reels Архитектура</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #1a1a2e;
+      --panel: #2d2d44;
+      --panel-2: #34344e;
+      --accent: #7c3aed;
+      --accent-hover: #8b5cf6;
+      --text: #f5f5fa;
+      --text-dim: #9a9ab0;
+      --text-faint: #6b6b85;
+      --border: #3a3a55;
+      --danger: #ef4444;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* ---------- Sidebar ---------- */
+    .sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 24px 16px;
+      gap: 8px;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+
+    .brand {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      padding: 0 12px 20px;
+      color: var(--text);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--radius);
+      color: var(--text-dim);
+      cursor: pointer;
+      user-select: none;
+      font-size: 15px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-item:hover { background: var(--panel-2); color: var(--text); }
+    .nav-item.active { background: var(--accent); color: #fff; }
+
+    .nav-item svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .user-info { flex: 1; min-width: 0; }
+    .user-name { font-size: 14px; font-weight: 600; }
+    .user-role { font-size: 12px; color: var(--text-faint); }
+
+    .chevron {
+      width: 16px;
+      height: 16px;
+      stroke: var(--text-faint);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* ---------- Main ---------- */
+    .content {
+      flex: 1;
+      padding: 32px 40px;
+      min-width: 0;
+    }
+
+    .content-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+
+    .content-subtitle {
+      margin-top: 6px;
+      font-size: 15px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      background: var(--accent);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 20px;
+      padding: 2px 10px;
+      line-height: 1.5;
+    }
+
+    .panel {
+      margin-top: 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    /* ---------- Table ---------- */
+    table { width: 100%; border-collapse: collapse; }
+
+    thead th {
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
+      font-weight: 600;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--panel-2); }
+
+    .video-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--panel-2), var(--accent-hover));
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .thumb svg { width: 20px; height: 20px; stroke: rgba(255,255,255,0.6); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .video-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 380px; }
+    .video-author { font-size: 13px; color: var(--text-faint); margin-top: 2px; }
+
+    .link-btn {
+      background: none;
+      border: none;
+      color: var(--accent-hover);
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .link-btn:hover { text-decoration: underline; }
+
+    /* ---------- Right column (competitors) ---------- */
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+      align-items: start;
+      margin-top: 24px;
+    }
+
+    .side-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .side-panel h3 { font-size: 15px; font-weight: 600; margin-bottom: 14px; }
+
+    .input-row { display: flex; gap: 8px; }
+
+    .input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      min-width: 0;
+    }
+    .input::placeholder { color: var(--text-faint); }
+    .input:focus { border-color: var(--accent); }
+
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .competitor-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+
+    .competitor-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .competitor-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .competitor-info { flex: 1; min-width: 0; }
+    .competitor-name { font-size: 14px; font-weight: 600; }
+    .competitor-date { font-size: 12px; color: var(--text-faint); }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-faint);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: color 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .icon-btn:hover { color: var(--danger); }
+
+    .icon-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ---------- Account detail ---------- */
+    .back-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .back-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    .account-title { font-size: 22px; font-weight: 700; }
+    .account-subtitle { margin-top: 4px; font-size: 14px; color: var(--text-dim); }
+
+    .progress-block { margin-top: 20px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+    .progress-bar {
+      height: 8px;
+      background: var(--panel-2);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 100%;
+      background: var(--accent);
+      border-radius: 20px;
+      transition: width 0.3s;
+    }
+
+    .reels-grid {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+
+    .reel-card { cursor: pointer; }
+    .reel-card:hover .reel-thumb { border-color: var(--accent); }
+
+    .reel-thumb {
+      aspect-ratio: 9 / 16;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--panel-2), var(--bg));
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s;
+      overflow: hidden;
+    }
+
+    .reel-thumb svg { width: 32px; height: 32px; stroke: rgba(255,255,255,0.35); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+    .reel-name {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-dim);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ---------- Utility ---------- */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .empty { padding: 24px; text-align: center; color: var(--text-faint); font-size: 14px; }
+
+    @media (max-width: 1100px) {
+      .split { grid-template-columns: 1fr; }
+      .reels-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 800px) {
+      .sidebar { display: none; }
+      .content { padding: 20px; }
+      .reels-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
 </head>
 <body>
-  <h1>Reels Finder</h1>
-  <p>Работает.</p>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">Reels Архитектура</div>
+
+    <div class="nav-item" data-view="home">
+      <svg><path d="M3 10.5L12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      Главная
+    </div>
+    <div class="nav-item active" data-view="competitors">
+      <svg><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 2.9-5.5 6.5-5.5s6.5 2 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.8 0 4.5 1.8 4.5 4.5"/></svg>
+      Конкуренты
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="avatar">А</div>
+      <div class="user-info">
+        <div class="user-name">Артем</div>
+        <div class="user-role">Продюсер</div>
+      </div>
+      <svg class="chevron"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="content">
+
+    <!-- View: Home -->
+    <section class="view" id="view-home">
+      <h1 class="content-title">Главная</h1>
+      <div class="content-subtitle">
+        <span>Все Reels в базе</span>
+        <span class="badge" id="reels-count">20</span>
+      </div>
+
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:52%">Видео</th>
+              <th>Конкурент</th>
+              <th>Дата</th>
+            </tr>
+          </thead>
+          <tbody id="reels-table"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- View: Competitors -->
+    <section class="view" id="view-competitors">
+      <h1 class="content-title">Конкуренты</h1>
+      <div class="content-subtitle">
+        <span>Управление аккаунтами конкурентов</span>
+      </div>
+
+      <div class="split">
+        <div class="side-panel">
+          <h3>Все Reels в базе</h3>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:52%">Видео</th>
+                <th>Конкурент</th>
+                <th>Дата</th>
+              </tr>
+            </thead>
+            <tbody id="competitors-reels-table"></tbody>
+          </table>
+        </div>
+
+        <div class="side-panel">
+          <h3>Добавить конкурента</h3>
+          <div class="input-row">
+            <input class="input" id="competitor-url" type="text" placeholder="Вставьте ссылку на Instagram-аккаунт">
+            <button class="btn" id="add-competitor-btn">Добавить</button>
+          </div>
+
+          <h3 style="margin-top:24px">Добавленные конкуренты</h3>
+          <div class="competitor-list" id="competitor-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View: Account detail -->
+    <section class="view" id="view-account">
+      <button class="back-btn" id="account-back">
+        <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+        Назад
+      </button>
+
+      <h1 class="account-title" id="account-name">@codewithalex</h1>
+      <div class="account-subtitle" id="account-subtitle">Последние 20 Reels</div>
+
+      <div class="progress-block">
+        <div class="progress-label">
+          <span>Скачивание</span>
+          <span id="progress-text">20 / 20 завершено</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width:100%"></div>
+        </div>
+      </div>
+
+      <div class="reels-grid" id="account-grid"></div>
+    </section>
+
+  </main>
+
+  <script>
+    const REELS = [
+      { title: "Идеальный утренний ритуал", author: "@codewithalex", date: "05.08.2026" },
+      { title: "3 совета по видеомонтажу", author: "@codewithalex", date: "04.08.2026" },
+      { title: "Как снять за 1 минуту", author: "@codewithalex", date: "03.08.2026" },
+      { title: "Разбор фичей Reels", author: "@codewithalex", date: "02.08.2026" },
+      { title: "Секреты алгоритма", author: "@codewithalex", date: "01.08.2026" },
+      { title: "Тренды августа", author: "@codewithalex", date: "31.07.2026" },
+      { title: "Свет без студии", author: "@codewithalex", date: "30.07.2026" },
+      { title: "10 идей для рилс", author: "@codewithalex", date: "29.07.2026" },
+      { title: "Монтаж на телефоне", author: "@codewithalex", date: "28.07.2026" },
+      { title: "Как набрать подписчиков", author: "@codewithalex", date: "27.07.2026" },
+      { title: "Обзор трендовых звуков", author: "@codewithalex", date: "26.07.2026" },
+      { title: "Что снимать новичку", author: "@codewithalex", date: "25.07.2026" },
+      { title: "Идеи контента на месяц", author: "@codewithalex", date: "24.07.2026" },
+      { title: "Как растёт охват", author: "@codewithalex", date: "23.07.2026" },
+      { title: "5 ошибок монтажа", author: "@codewithalex", date: "22.07.2026" },
+      { title: "Хук за 3 секунды", author: "@codewithalex", date: "21.07.2026" },
+      { title: "Цветокоррекция быстро", author: "@codewithalex", date: "20.07.2026" },
+      { title: "Шаблоны для рилс", author: "@codewithalex", date: "19.07.2026" },
+      { title: "Как часто постить", author: "@codewithalex", date: "18.07.2026" },
+      { title: "Аналитика Reels", author: "@codewithalex", date: "17.07.2026" }
+    ];
+
+    const competitors = [
+      { name: "@codewithalex", added: "05.08.2026" },
+      { name: "@designerdaily", added: "04.08.2026" },
+      { name: "@videopro_max", added: "01.08.2026" }
+    ];
+
+    function thumbSvg() {
+      return '<svg><rect x="2" y="6" width="14" height="14" rx="2"/><path d="M16 10h4l-2 3 2 3h-4"/></svg>';
+    }
+
+    function renderReels(tbodyId, data) {
+      const tbody = document.getElementById(tbodyId);
+      if (!data.length) { tbody.innerHTML = '<tr><td colspan="3"><div class="empty">Нет данных</div></td></tr>'; return; }
+      tbody.innerHTML = data.map(r => `
+        <tr>
+          <td>
+            <div class="video-cell">
+              <div class="thumb">${thumbSvg()}</div>
+              <div>
+                <div class="video-title">${r.title}</div>
+                <div class="video-author">${r.author}</div>
+              </div>
+            </div>
+          </td>
+          <td><button class="link-btn" data-author="${r.author}">${r.author}</button></td>
+          <td>${r.date}</td>
+        </tr>`).join("");
+    }
+
+    function renderCompetitors() {
+      const list = document.getElementById("competitor-list");
+      if (!competitors.length) { list.innerHTML = '<div class="empty">Конкуренты не добавлены</div>'; return; }
+      list.innerHTML = competitors.map((c, i) => `
+        <div class="competitor-row">
+          <div class="competitor-avatar">${c.name[1].toUpperCase()}</div>
+          <div class="competitor-info">
+            <div class="competitor-name">${c.name}</div>
+            <div class="competitor-date">Добавлен: ${c.added}</div>
+          </div>
+          <button class="icon-btn" data-remove="${i}" title="Удалить">
+            <svg><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/><path d="M10 10v6"/><path d="M14 10v6"/></svg>
+          </button>
+        </div>`).join("");
+    }
+
+    function renderAccountGrid() {
+      const grid = document.getElementById("account-grid");
+      grid.innerHTML = REELS.map(r => `
+        <div class="reel-card">
+          <div class="reel-thumb">${thumbSvg()}</div>
+          <div class="reel-name">${r.title}</div>
+        </div>`).join("");
+    }
+
+    function showView(name) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.getElementById("view-" + name).classList.add("active");
+      document.querySelectorAll(".nav-item").forEach(n => {
+        n.classList.toggle("active", n.dataset.view === name);
+      });
+    }
+
+    // Events
+    document.querySelectorAll(".nav-item").forEach(item => {
+      item.addEventListener("click", () => showView(item.dataset.view));
+    });
+
+    document.getElementById("add-competitor-btn").addEventListener("click", () => {
+      const input = document.getElementById("competitor-url");
+      const url = input.value.trim();
+      if (!url) return;
+      let name = url.replace(/^https?:\/\//, "").split("/").filter(Boolean)[0] || url;
+      if (name.startsWith("www.")) name = name.slice(4);
+      if (!name.startsWith("@")) name = "@" + name;
+      competitors.unshift({ name: name, added: new Date().toLocaleDateString("ru-RU") });
+      input.value = "";
+      renderCompetitors();
+      updateReelsCount();
+    });
+
+    document.getElementById("competitor-list").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-remove]");
+      if (!btn) return;
+      competitors.splice(parseInt(btn.dataset.remove), 1);
+      renderCompetitors();
+      updateReelsCount();
+    });
+
+    document.getElementById("competitors-reels-table").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-author]");
+      if (!btn) return;
+      openAccount(btn.dataset.author);
+    });
+
+    document.getElementById("reels-table").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-author]");
+      if (!btn) return;
+      openAccount(btn.dataset.author);
+    });
+
+    document.getElementById("account-back").addEventListener("click", () => showView("competitors"));
+
+    function openAccount(author) {
+      document.getElementById("account-name").textContent = author;
+      document.getElementById("account-subtitle").textContent = "Последние 20 Reels";
+      document.getElementById("progress-text").textContent = "20 / 20 завершено";
+      document.getElementById("progress-fill").style.width = "100%";
+      renderAccountGrid();
+      showView("account");
+    }
+
+    function updateReelsCount() {
+      const total = competitors.length * REELS.length;
+      document.getElementById("reels-count").textContent = total;
+    }
+
+    // Init
+    renderReels("reels-table", REELS);
+    renderReels("competitors-reels-table", REELS);
+    renderCompetitors();
+    updateReelsCount();
+  </script>
 </body>
 </html>
