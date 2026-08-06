@@ -1,0 +1,70 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.iml
+*.suo
+*.user
+.project
+.classpath
+.settings/
+.vs/
+*.code-workspace
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+bun.lockb
+.vite/
+.cache/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.eggs/
+*.egg-info/
+dist/
+build/
+.coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Logs
+*.log
+logs/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+out/
+target/
+*.exe
+*.dll
+*.so
+*.dylib
+*.o
+*.a
+*.class
+
+# Covers the cases of the .env file containing secrets
