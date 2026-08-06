@@ -25,7 +25,15 @@
 ## Автодеплой
 
 Серверная папка — отдельный клон репозитория: `D:\reels-server\app`.
-Планировщик Windows каждую минуту запускает `deploy.ps1`, который:
+Планировщик Windows каждую минуту запускает `deploy.ps1` (задача `reels-finder-autodeploy`, под учёткой SYSTEM), который:
 проверяет наличие новых коммитов на GitHub → тянет их → пересобирает контейнер (`docker compose up -d --build`).
+
+Лог деплоя: `D:\reels-server\deploy.log`.
+
+## Тонкости
+
+- `deploy.ps1` работает под учёткой SYSTEM: поэтому в нём прописан `git config --global --add safe.directory` (иначе git блокирует репозиторий, клонированный другим пользователем).
+- `$ErrorActionPreference = "Continue"` (не `Stop`): вывод сборки docker идёт в stderr, и с `Stop` пайплайн обрывается до «Deploy finished».
+- Проверка работы автодеплоя: коммит → `git push` → через ~1 минуту смотреть `D:\reels-server\deploy.log` и `http://localhost:8080`.
 
 Ничего не менять на сервере руками — только через git push.
