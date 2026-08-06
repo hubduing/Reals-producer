@@ -7,6 +7,9 @@ $serverDir = "D:\reels-server\app"
 $repoUrl = "https://github.com/hubduing/Reals-producer.git"
 $logFile = "D:\reels-server\deploy.log"
 
+# Repo may have been cloned by another user; allow git access under SYSTEM.
+git config --global --add safe.directory $serverDir 2>$null
+
 function Write-Log($msg) {
     $line = "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] $msg"
     Write-Output $line
